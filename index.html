@@ -37,12 +37,36 @@
             padding: 10px;
             margin-top: auto; /* 将 footer 推至页面底部 */
         }
+
+        /* 打卡按钮样式 */
+        .check-in-button {
+            position: fixed; /* 固定定位 */
+            top: 20px; /* 距离顶部 20px */
+            right: 20px; /* 距离右侧 20px */
+            width: 50px; /* 宽度 50px */
+            height: 50px; /* 高度 50px */
+            background-color: #4CAF50; /* 背景颜色 */
+            color: white; /* 文字颜色 */
+            border: none; /* 去掉边框 */
+            border-radius: 50%; /* 圆形按钮 */
+            cursor: pointer; /* 鼠标悬停时显示手型 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px; /* 文字大小 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+        }
+
+        /* 鼠标悬停效果 */
+        .check-in-button:hover {
+            background-color: #45a049; /* 悬停时背景颜色变深 */
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <img src="dream.jpg" alt="永动机网站 Logo" width="150">
+            <img src="logo.png" alt="永动机网站 Logo" width="150">
             <div class="content">
                 <h1>欢迎来到永动机！</h1>
                 <p>这是一个简单的永动机。</p>
@@ -55,5 +79,15 @@
     <footer>
         &copy; 2025 By Zhang Sizhe And Yang RenRui. All rights reserved.
     </footer>
+
+    <!-- 打卡按钮 -->
+    <button class="check-in-button" onclick="checkIn()">打卡</button>
+
+    <script>
+        // 打卡功能
+        function checkIn() {
+            alert("打卡成功！今天是 " + new Date().toLocaleDateString());
+        }
+    </script>
 </body>
 </html>
