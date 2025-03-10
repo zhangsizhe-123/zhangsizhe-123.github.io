@@ -4,7 +4,22 @@
     <meta charset="UTF-8">
     <title>永动机</title>
     <style>
-        body { font-family: KaiTi, Arial, sans-serif; text-align: center; }
+        body {
+            font-family: KaiTi, Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex; /* 启用 Flexbox */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            margin-top: 20px;
+        }
+        .content {
+            text-align: left; /* 文本左对齐 */
+            margin-left: 20px; /* Logo 和文本之间的间距 */
+        }
         header {
             background-color: #f8f8f8;
             padding: 10px;
@@ -19,12 +34,16 @@
 </head>
 <body>
     <header>
-        <img src="logo.png" alt="永动机网站 Logo" width="150">
+        <div class="container">
+            <img src="logo.png" alt="永动机网站 Logo" width="150">
+            <div class="content">
+                <h1>欢迎来到永动机！</h1>
+                <p>这是一个简单的永动机。</p>
+            </div>
+        </div>
     </header>
-    <h1>欢迎来到永动机！</h1>
-    <p>这是一个简单的永动机。</p>
     <footer>
         &copy; 2025 By Zhang Sizhe And Yang RenRui. All rights reserved.
     </footer>
 </body>
-</html>
+</html>tml>
