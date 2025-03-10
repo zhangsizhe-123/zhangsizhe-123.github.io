@@ -38,11 +38,16 @@
             margin-top: auto; /* 将 footer 推至页面底部 */
         }
 
-        /* 打卡按钮样式 */
-        .check-in-button {
+        /* 打卡按钮容器 */
+        .check-in-container {
             position: fixed; /* 固定定位 */
             top: 20px; /* 距离顶部 20px */
             right: 20px; /* 距离右侧 20px */
+            text-align: center; /* 内容居中 */
+        }
+
+        /* 打卡按钮样式 */
+        .check-in-button {
             width: 50px; /* 宽度 50px */
             height: 50px; /* 高度 50px */
             background-color: #4CAF50; /* 背景颜色 */
@@ -55,6 +60,7 @@
             justify-content: center;
             font-size: 16px; /* 文字大小 */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+            margin: 0 auto 10px; /* 居中并设置下方间距 */
         }
 
         /* 鼠标悬停效果 */
@@ -66,6 +72,12 @@
         .check-in-button:disabled {
             background-color: #ccc; /* 灰色背景 */
             cursor: not-allowed; /* 禁用鼠标点击 */
+        }
+
+        /* 连续打卡天数提示 */
+        .streak-message {
+            font-size: 14px;
+            color: #333;
         }
     </style>
 </head>
@@ -80,15 +92,17 @@
         </div>
     </header>
     <main>
-        <!-- 显示连续打卡天数 -->
-        <div id="streakMessage" style="text-align: center; font-size: 18px; margin-top: 20px;"></div>
+        <!-- 主要内容区域 -->
     </main>
     <footer>
         &copy; 2025 By Zhang Sizhe And Yang RenRui. All rights reserved.
     </footer>
 
-    <!-- 打卡按钮 -->
-    <button class="check-in-button" onclick="checkIn()" id="checkInButton">打卡</button>
+    <!-- 打卡按钮和连续打卡天数 -->
+    <div class="check-in-container">
+        <button class="check-in-button" onclick="checkIn()" id="checkInButton">打卡</button>
+        <div class="streak-message" id="streakMessage"></div>
+    </div>
 
     <script>
         // 获取打卡按钮和显示连续打卡天数的元素
