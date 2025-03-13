@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>永动机</title>
@@ -10,73 +11,106 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* 使页面高度占满整个视口 */
+            min-height: 100vh;
+            /* 使页面高度占满整个视口 */
         }
+
         header {
             background-color: #f8f8f8;
-            padding: 10px 20px; /* 上下 10px，左右 20px */
+            padding: 10px 20px;
+            /* 上下 10px，左右 20px */
         }
+
         .container {
             display: flex;
             align-items: center;
         }
+
         .container img {
-            width: 80px; /* 设置 Logo 宽度 */
-            height: 80px; /* 设置 Logo 高度 */
-            border-radius: 50%; /* 将图片变成圆形 */
-            object-fit: cover; /* 确保图片比例正确 */
-            margin-right: 15px; /* 调整 Logo 和标题之间的间距 */
-            border: 2px solid #ccc; /* 可选：添加边框 */
+            width: 80px;
+            /* 设置 Logo 宽度 */
+            height: 80px;
+            /* 设置 Logo 高度 */
+            border-radius: 50%;
+            /* 将图片变成圆形 */
+            object-fit: cover;
+            /* 确保图片比例正确 */
+            margin-right: 15px;
+            /* 调整 Logo 和标题之间的间距 */
+            border: 2px solid #ccc;
+            /* 可选：添加边框 */
         }
+
         .content {
             text-align: left;
         }
+
         main {
-            flex: 1; /* 使主要内容区域填充剩余空间 */
+            flex: 1;
+            /* 使主要内容区域填充剩余空间 */
             padding: 20px;
         }
+
         footer {
             background-color: #333;
             color: white;
             text-align: center;
             padding: 10px;
-            margin-top: auto; /* 将 footer 推至页面底部 */
+            margin-top: auto;
+            /* 将 footer 推至页面底部 */
         }
 
         /* 打卡按钮容器 */
         .check-in-container {
-            position: fixed; /* 固定定位 */
-            top: 20px; /* 距离顶部 20px */
-            right: 20px; /* 距离右侧 20px */
-            text-align: center; /* 内容居中 */
+            position: fixed;
+            /* 固定定位 */
+            top: 20px;
+            /* 距离顶部 20px */
+            right: 20px;
+            /* 距离右侧 20px */
+            text-align: center;
+            /* 内容居中 */
         }
 
         /* 打卡按钮样式 */
         .check-in-button {
-            width: 50px; /* 宽度 50px */
-            height: 50px; /* 高度 50px */
-            background-color: #4CAF50; /* 背景颜色 */
-            color: white; /* 文字颜色 */
-            border: none; /* 去掉边框 */
-            border-radius: 50%; /* 圆形按钮 */
-            cursor: pointer; /* 鼠标悬停时显示手型 */
+            width: 50px;
+            /* 宽度 50px */
+            height: 50px;
+            /* 高度 50px */
+            background-color: #4CAF50;
+            /* 背景颜色 */
+            color: white;
+            /* 文字颜色 */
+            border: none;
+            /* 去掉边框 */
+            border-radius: 50%;
+            /* 圆形按钮 */
+            cursor: pointer;
+            /* 鼠标悬停时显示手型 */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px; /* 文字大小 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影 */
-            margin: 0 auto 10px; /* 居中并设置下方间距 */
+            font-size: 16px;
+            /* 文字大小 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* 添加阴影 */
+            margin: 0 auto 10px;
+            /* 居中并设置下方间距 */
         }
 
         /* 鼠标悬停效果 */
         .check-in-button:hover {
-            background-color: #45a049; /* 悬停时背景颜色变深 */
+            background-color: #45a049;
+            /* 悬停时背景颜色变深 */
         }
 
         /* 禁用按钮样式 */
         .check-in-button:disabled {
-            background-color: #ccc; /* 灰色背景 */
-            cursor: not-allowed; /* 禁用鼠标点击 */
+            background-color: #ccc;
+            /* 灰色背景 */
+            cursor: not-allowed;
+            /* 禁用鼠标点击 */
         }
 
         /* 连续打卡天数提示 */
@@ -86,6 +120,7 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -110,84 +145,8 @@
         <div class="streak-message" id="streakMessage"></div>
     </div>
 
-    <script>
-        // 获取打卡按钮和显示连续打卡天数的元素
-        const checkInButton = document.getElementById("checkInButton");
-        const streakMessage = document.getElementById("streakMessage");
-
-        // 初始化打卡记录
-        let checkInRecord = JSON.parse(localStorage.getItem("checkInRecord")) || {
-            lastCheckInDate: null, // 最后一次打卡日期
-            streak: 0 // 连续打卡天数
-        };
-
-        // 检查是否已经打卡
-        function checkIfCheckedIn() {
-            const today = new Date().toLocaleDateString();
-
-            // 如果今天已经打卡过，则禁用按钮
-            if (checkInRecord.lastCheckInDate === today) {
-                checkInButton.disabled = true;
-                checkInButton.textContent = "已打卡";
-                checkInButton.style.backgroundColor = "#ccc";
-            }
-
-            // 显示连续打卡天数
-            updateStreakMessage();
-        }
-
-        // 打卡功能
-        function checkIn() {
-            const today = new Date().toLocaleDateString();
-            const lastCheckInDate = checkInRecord.lastCheckInDate;
-
-            // 如果今天已经打卡过，则提示用户
-            if (lastCheckInDate === today) {
-                alert("今天已经打卡过了，请明天再来！");
-            } else {
-                // 检查是否连续打卡
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayFormatted = yesterday.toLocaleDateString();
-
-                if (lastCheckInDate === yesterdayFormatted) {
-                    // 如果是连续打卡，增加连续打卡天数
-                    checkInRecord.streak += 1;
-                } else {
-                    // 如果不是连续打卡，重置连续打卡天数
-                    checkInRecord.streak = 1;
-                }
-
-                // 更新最后一次打卡日期
-                checkInRecord.lastCheckInDate = today;
-
-                // 保存打卡记录到 localStorage
-                localStorage.setItem("checkInRecord", JSON.stringify(checkInRecord));
-
-                // 提示用户打卡成功
-                alert(`打卡成功！今天是 ${today}\n连续打卡天数：${checkInRecord.streak}`);
-
-                // 更新按钮状态
-                checkInButton.disabled = true;
-                checkInButton.textContent = "已打卡";
-                checkInButton.style.backgroundColor = "#ccc";
-
-                // 更新连续打卡天数显示
-                updateStreakMessage();
-            }
-        }
-
-        // 更新连续打卡天数显示
-        function updateStreakMessage() {
-            if (checkInRecord.streak > 0) {
-                streakMessage.textContent = `你已经连续打卡 ${checkInRecord.streak} 天！`;
-            } else {
-                streakMessage.textContent = "今天还没有打卡哦！";
-            }
-        }
-
-        // 页面加载时检查是否已经打卡
-        checkIfCheckedIn();
-    </script>
+    <!-- 引入外部 JavaScript 文件 -->
+    <script src="check-in.js"></script>
 </body>
+
 </html>
