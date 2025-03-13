@@ -1,124 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>永动机</title>
-    <style>
-        body {
-            font-family: KaiTi, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            /* 使页面高度占满整个视口 */
-        }
-
-        header {
-            background-color: #f8f8f8;
-            padding: 10px 20px;
-            /* 上下 10px，左右 20px */
-        }
-
-        .container {
-            display: flex;
-            align-items: center;
-        }
-
-        .container img {
-            width: 80px;
-            /* 设置 Logo 宽度 */
-            height: 80px;
-            /* 设置 Logo 高度 */
-            border-radius: 50%;
-            /* 将图片变成圆形 */
-            object-fit: cover;
-            /* 确保图片比例正确 */
-            margin-right: 15px;
-            /* 调整 Logo 和标题之间的间距 */
-            border: 2px solid #ccc;
-            /* 可选：添加边框 */
-        }
-
-        .content {
-            text-align: left;
-        }
-
-        main {
-            flex: 1;
-            /* 使主要内容区域填充剩余空间 */
-            padding: 20px;
-        }
-
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            margin-top: auto;
-            /* 将 footer 推至页面底部 */
-        }
-
-        /* 打卡按钮容器 */
-        .check-in-container {
-            position: fixed;
-            /* 固定定位 */
-            top: 20px;
-            /* 距离顶部 20px */
-            right: 20px;
-            /* 距离右侧 20px */
-            text-align: center;
-            /* 内容居中 */
-        }
-
-        /* 打卡按钮样式 */
-        .check-in-button {
-            width: 50px;
-            /* 宽度 50px */
-            height: 50px;
-            /* 高度 50px */
-            background-color: #4CAF50;
-            /* 背景颜色 */
-            color: white;
-            /* 文字颜色 */
-            border: none;
-            /* 去掉边框 */
-            border-radius: 50%;
-            /* 圆形按钮 */
-            cursor: pointer;
-            /* 鼠标悬停时显示手型 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            /* 文字大小 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            /* 添加阴影 */
-            margin: 0 auto 10px;
-            /* 居中并设置下方间距 */
-        }
-
-        /* 鼠标悬停效果 */
-        .check-in-button:hover {
-            background-color: #45a049;
-            /* 悬停时背景颜色变深 */
-        }
-
-        /* 禁用按钮样式 */
-        .check-in-button:disabled {
-            background-color: #ccc;
-            /* 灰色背景 */
-            cursor: not-allowed;
-            /* 禁用鼠标点击 */
-        }
-
-        /* 连续打卡天数提示 */
-        .streak-message {
-            font-size: 14px;
-            color: #333;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -133,7 +20,11 @@
         </div>
     </header>
     <main>
-        <!-- 主要内容区域 -->
+        <article>
+            <!-- 主要内容区域 -->
+            <h1>主要内容标题</h1>
+            <p>这里是主要内容的详细描述。</p>
+        </article>
     </main>
     <footer>
         &copy; 2025 By Zhang Sizhe and Yang RenRui. All rights reserved.
