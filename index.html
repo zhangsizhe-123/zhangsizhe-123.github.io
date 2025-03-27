@@ -4,360 +4,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="logo.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="logo.ico" type="image/x-icon">
+    <link rel="icon" href="../logo.ico" type="image/x-icon">
     <title>永动机 —— 实时讨论区</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
-        /* 新增的实时讨论区样式 */
-        .realtime-discussion {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 350px;
-            max-height: 500px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --light-text: #ecf0f1;
+            --bg-color: #f9f9f9;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        .discussion-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         .discussion-header {
-            padding: 12px 16px;
-            background-color: #2c3e50;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
+            margin-bottom: 30px;
         }
         
-        .discussion-close {
-            cursor: pointer;
-            font-size: 18px;
+        .discussion-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
         }
         
-        .discussion-messages {
-            flex: 1;
+        .back-to-home {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .messages-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 60vh;
             overflow-y: auto;
-            padding: 10px;
-            background-color: #f9f9f9;
         }
         
         .message {
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            background-color: white;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.2s ease-out;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .message:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
         
         .message-header {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
             color: #666;
-            margin-bottom: 4px;
+        }
+        
+        .message-user {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .message-time {
+            color: #999;
         }
         
         .message-content {
-            font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
         
-        .discussion-input {
+        .input-area {
             display: flex;
-            padding: 10px;
-            border-top: 1px solid #eee;
-            background-color: white;
+            gap: 10px;
         }
         
-        .discussion-input input {
+        .message-input {
             flex: 1;
-            padding: 8px 12px;
+            padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 1em;
             outline: none;
+            transition: border 0.3s;
         }
         
-        .discussion-input button {
-            margin-left: 8px;
-            padding: 8px 16px;
-            background-color: #2c3e50;
+        .message-input:focus {
+            border-color: var(--accent-color);
+        }
+        
+        .send-button {
+            padding: 12px 20px;
+            background-color: var(--accent-color);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        
+        .send-button:hover {
+            background-color: #2980b9;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* 性能优化样式 */
-        .message {
-            will-change: transform, opacity;
-        }
-        
-        .discussion-messages {
-            will-change: contents;
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .discussion-container {
+                padding: 15px;
+            }
+            
+            .messages-container {
+                max-height: 65vh;
+            }
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <div class="container">
-            <img src="logo.png" alt="永动机网站 Logo">
-            <div class="content">
-                <p>欢迎来到永动机！</p>
-                <p>这是一个简单的永动机。</p>
+    <div class="discussion-container">
+        <div class="discussion-header">
+            <h1>永动机讨论区</h1>
+            <p>与社区成员实时交流</p>
+            <a href="/" class="back-to-home">← 返回首页</a>
+        </div>
+        
+        <div class="messages-container" id="messagesContainer">
+            <!-- 消息将通过JavaScript动态加载 -->
+            <div class="welcome-message">
+                <div class="message-header">
+                    <span class="message-user">系统消息</span>
+                    <span class="message-time">刚刚</span>
+                </div>
+                <div class="message-content">
+                    欢迎来到永动机讨论区！请遵守社区规则，文明交流。
+                </div>
             </div>
         </div>
-    </header>
-    <main>
-        <article>
-            <h1>主要内容标题</h1>
-            <p>这里是主要内容的详细描述。</p>
-        </article>
-    </main>
-    <footer>
-        &copy; 2025 By Zhang Sizhe and Yang RenRui. All rights reserved.
-    </footer>
-
-    <!-- 打卡按钮和连续打卡天数 -->
-    <div class="check-in-container">
-        <button class="check-in-button" onclick="checkIn()" id="checkInButton">打卡</button>
-        <div class="streak-message" id="streakMessage"></div>
-    </div>
-
-    <!-- 实时讨论区 -->
-    <div class="realtime-discussion" id="realtimeDiscussion">
-        <div class="discussion-header">
-            <span>实时讨论区</span>
-            <span class="discussion-close" id="closeDiscussion">×</span>
-        </div>
-        <div class="discussion-messages" id="discussionMessages"></div>
-        <div class="discussion-input">
-            <input type="text" id="messageInput" placeholder="输入消息...">
-            <button id="sendMessage">发送</button>
+        
+        <div class="input-area">
+            <input type="text" class="message-input" id="messageInput" placeholder="输入您的消息...">
+            <button class="send-button" id="sendButton">发送</button>
         </div>
     </div>
 
-    <!-- 引入外部 JavaScript 文件 -->
-    <script src="check-in.js"></script>
     <script>
-        // 高性能实时讨论区实现
-        (function() {
-            // 性能监控
-            const perf = {
-                lastUpdate: 0,
-                avgLatency: 0,
-                samples: 0,
-                maxLatency: 0
-            };
+        // 模拟实时讨论功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
             
-            // 使用WebSocket连接
-            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const socketUrl = protocol + window.location.host + '/realtime-discussion';
-            let socket = new WebSocket(socketUrl);
-            
-            // 二进制协议标志位
-            const MESSAGE_TYPE = {
-                TEXT: 0x01,
-                SYSTEM: 0x02,
-                UPDATE: 0x03
-            };
-            
-            // DOM缓存
-            const elements = {
-                discussion: document.getElementById('realtimeDiscussion'),
-                messages: document.getElementById('discussionMessages'),
-                input: document.getElementById('messageInput'),
-                sendBtn: document.getElementById('sendMessage'),
-                closeBtn: document.getElementById('closeDiscussion')
-            };
-            
-            // 消息缓冲区
-            const messageBuffer = {
-                buffer: [],
-                lastFlush: 0,
-                flush() {
-                    if (this.buffer.length === 0) return;
-                    
-                    const fragment = document.createDocumentFragment();
-                    this.buffer.forEach(msg => {
-                        fragment.appendChild(createMessageElement(msg));
-                    });
-                    
-                    // 使用微任务批量插入
-                    Promise.resolve().then(() => {
-                        elements.messages.insertBefore(fragment, elements.messages.firstChild);
-                        this.buffer = [];
-                        this.lastFlush = performance.now();
-                    });
-                }
-            };
-            
-            // 创建消息元素
-            function createMessageElement(data) {
-                const now = performance.now();
-                const latency = now - data.timestamp;
-                perf.samples++;
-                perf.avgLatency = (perf.avgLatency * (perf.samples - 1) + latency) / perf.samples;
-                perf.maxLatency = Math.max(perf.maxLatency, latency);
+            // 模拟WebSocket连接
+            function simulateWebSocket() {
+                // 这里应该是真实的WebSocket连接代码
+                console.log('连接到实时讨论服务器...');
                 
-                const messageEl = document.createElement('div');
-                messageEl.className = 'message';
-                messageEl.innerHTML = `
-                    <div class="message-header">
-                        <span>${data.user}</span>
-                        <span>${new Date(data.timestamp).toLocaleTimeString()}</span>
-                    </div>
-                    <div class="message-content">${data.content}</div>
-                `;
-                return messageEl;
-            }
-            
-            // WebSocket事件处理
-            socket.binaryType = 'arraybuffer';
-            
-            socket.onopen = function(e) {
-                console.log('WebSocket连接已建立');
-                // 发送连接元数据
-                const meta = {
-                    type: 'connect',
-                    userAgent: navigator.userAgent,
-                    screen: `${window.screen.width}x${window.screen.height}`
-                };
-                socket.send(JSON.stringify(meta));
-            };
-            
-            socket.onmessage = function(event) {
-                const startTime = performance.now();
-                
-                try {
-                    // 二进制协议处理
-                    if (event.data instanceof ArrayBuffer) {
-                        const dataView = new DataView(event.data);
-                        const messageType = dataView.getUint8(0);
-                        
-                        switch(messageType) {
-                            case MESSAGE_TYPE.TEXT:
-                                const decoder = new TextDecoder();
-                                const offset = 1; // 跳过类型字节
-                                const jsonLength = dataView.getUint32(offset);
-                                const jsonStr = decoder.decode(
-                                    new Uint8Array(event.data, offset + 4, jsonLength)
-                                );
-                                const message = JSON.parse(jsonStr);
-                                message.timestamp = performance.now();
-                                messageBuffer.buffer.push(message);
-                                break;
-                        }
-                    } 
-                    // JSON协议处理
-                    else {
-                        const message = JSON.parse(event.data);
-                        message.timestamp = performance.now();
-                        messageBuffer.buffer.push(message);
-                    }
+                // 模拟接收消息
+                setInterval(() => {
+                    const randomMessages = [
+                        "有人试过新的永动机设计吗？",
+                        "今天的打卡完成了吗？",
+                        "关于能量守恒定律，大家怎么看？",
+                        "永动机的历史可以追溯到什么时候？",
+                        "欢迎新成员加入讨论！"
+                    ];
                     
-                    // 使用requestAnimationFrame进行批量更新
-                    if (performance.now() - messageBuffer.lastFlush > 5) {
-                        requestAnimationFrame(() => {
-                            messageBuffer.flush();
+                    const randomUsers = ["物理爱好者", "永动机研究员", "科学探索者", "匿名用户", "新成员"];
+                    
+                    if (Math.random() > 0.7) { // 30%概率收到新消息
+                        addMessage({
+                            user: randomUsers[Math.floor(Math.random() * randomUsers.length)],
+                            content: randomMessages[Math.floor(Math.random() * randomMessages.length)],
+                            timestamp: new Date()
                         });
                     }
-                } catch (e) {
-                    console.error('消息处理错误:', e);
-                }
+                }, 5000);
+            }
+            
+            // 添加新消息到讨论区
+            function addMessage(message) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
                 
-                perf.lastUpdate = performance.now() - startTime;
-            };
-            
-            socket.onclose = function(event) {
-                if (event.wasClean) {
-                    console.log(`连接关闭，代码=${event.code} 原因=${event.reason}`);
-                } else {
-                    console.log('连接中断');
-                    // 尝试重新连接
-                    setTimeout(() => {
-                        socket = new WebSocket(socketUrl);
-                    }, 1000);
-                }
-            };
-            
-            socket.onerror = function(error) {
-                console.log('WebSocket错误:', error);
-            };
+                const timeString = message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                messageElement.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-user">${message.user}</span>
+                        <span class="message-time">${timeString}</span>
+                    </div>
+                    <div class="message-content">${message.content}</div>
+                `;
+                
+                messagesContainer.insertBefore(messageElement, messagesContainer.firstChild.nextSibling);
+                
+                // 自动滚动到最新消息
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
             
             // 发送消息
-            elements.sendBtn.addEventListener('click', sendMessage);
-            elements.input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendMessage();
-            });
-            
             function sendMessage() {
-                const content = elements.input.value.trim();
-                if (!content) return;
-                
-                const message = {
-                    type: 'message',
-                    content: content,
-                    timestamp: Date.now(),
-                    user: '匿名用户' // 实际应用中应该使用登录用户信息
-                };
-                
-                // 使用二进制协议发送
-                const encoder = new TextEncoder();
-                const jsonStr = JSON.stringify(message);
-                const jsonData = encoder.encode(jsonStr);
-                
-                const buffer = new ArrayBuffer(1 + 4 + jsonData.length);
-                const dataView = new DataView(buffer);
-                
-                dataView.setUint8(0, MESSAGE_TYPE.TEXT); // 消息类型
-                dataView.setUint32(1, jsonData.length); // 消息长度
-                
-                const uint8Array = new Uint8Array(buffer);
-                uint8Array.set(jsonData, 5); // 从第5字节开始放置JSON数据
-                
-                socket.send(buffer);
-                elements.input.value = '';
+                const content = messageInput.value.trim();
+                if (content) {
+                    addMessage({
+                        user: "我",
+                        content: content,
+                        timestamp: new Date()
+                    });
+                    
+                    // 这里应该是通过WebSocket发送消息的代码
+                    console.log('发送消息:', content);
+                    
+                    messageInput.value = '';
+                }
             }
             
-            // 关闭讨论区
-            elements.closeBtn.addEventListener('click', function() {
-                elements.discussion.style.display = 'none';
+            // 事件监听
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
             });
             
-            // 性能监控报告
-            setInterval(() => {
-                if (perf.samples > 0) {
-                    console.log(`平均延迟: ${perf.avgLatency.toFixed(2)}ms, 最大延迟: ${perf.maxLatency.toFixed(2)}ms`);
-                }
-            }, 5000);
+            // 初始化模拟连接
+            simulateWebSocket();
             
-            // 使用Web Worker进行后台消息处理
-            if (window.Worker) {
-                const messageWorker = new Worker('message-worker.js');
-                messageWorker.onmessage = function(e) {
-                    const processedMessage = e.data;
-                    messageBuffer.buffer.push(processedMessage);
+            // 如果是真实环境，应该使用以下代码：
+            /*
+            const socket = new WebSocket('wss://yourserver.com/realtime');
+            
+            socket.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                addMessage(message);
+            };
+            
+            function sendRealMessage(content) {
+                const message = {
+                    user: "当前用户",
+                    content: content,
+                    timestamp: new Date()
                 };
-                
-                socket.onmessage = function(event) {
-                    // 将原始数据传递给Worker处理
-                    messageWorker.postMessage(event.data, [event.data]);
-                };
+                socket.send(JSON.stringify(message));
             }
-        })();
+            */
+        });
     </script>
 </body>
 
