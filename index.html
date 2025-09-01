@@ -33,9 +33,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
         }
         
-        .discussion-close {
+        .discussion-toggle {
             cursor: pointer;
             font-size: 18px;
         }
@@ -94,6 +95,10 @@
             cursor: pointer;
         }
         
+        .discussion-input button:hover {
+            background-color: #34495e;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -106,6 +111,26 @@
         
         .discussion-messages {
             will-change: contents;
+        }
+        
+        /* 新增：显示/隐藏讨论区的按钮 */
+        .discussion-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -137,10 +162,10 @@
     </div>
 
     <!-- 实时讨论区 -->
-    <div class="realtime-discussion" id="realtimeDiscussion">
+    <div class="realtime-discussion" id="realtimeDiscussion" style="display: none;">
         <div class="discussion-header">
             <span>实时讨论区</span>
-            <span class="discussion-close" id="closeDiscussion">×</span>
+            <span class="discussion-toggle" id="toggleDiscussion">−</span>
         </div>
         <div class="discussion-messages" id="discussionMessages"></div>
         <div class="discussion-input">
@@ -148,6 +173,9 @@
             <button id="sendMessage">发送</button>
         </div>
     </div>
+    
+    <!-- 讨论区显示/隐藏按钮 -->
+    <button class="discussion-toggle-btn" id="showDiscussion">+</button>
 
     <!-- 引入外部 JavaScript 文件 -->
     <script src="check-in.js"></script>
@@ -162,10 +190,18 @@
                 maxLatency: 0
             };
             
+            // 讨论区状态管理
+            const discussionState = {
+                minimized: false,
+                visible: false
+            };
+            
             // 使用WebSocket连接
             const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
             const socketUrl = protocol + window.location.host + '/realtime-discussion';
             let socket = new WebSocket(socketUrl);
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
             
             // 二进制协议标志位
             const MESSAGE_TYPE = {
@@ -180,7 +216,8 @@
                 messages: document.getElementById('discussionMessages'),
                 input: document.getElementById('messageInput'),
                 sendBtn: document.getElementById('sendMessage'),
-                closeBtn: document.getElementById('closeDiscussion')
+                toggleBtn: document.getElementById('toggleDiscussion'),
+                showBtn: document.getElementById('showDiscussion')
             };
             
             // 消息缓冲区
@@ -197,7 +234,9 @@
                     
                     // 使用微任务批量插入
                     Promise.resolve().then(() => {
-                        elements.messages.insertBefore(fragment, elements.messages.firstChild);
+                        elements.messages.appendChild(fragment);
+                        // 滚动到底部
+                        elements.messages.scrollTop = elements.messages.scrollHeight;
                         this.buffer = [];
                         this.lastFlush = performance.now();
                     });
@@ -216,12 +255,22 @@
                 messageEl.className = 'message';
                 messageEl.innerHTML = `
                     <div class="message-header">
-                        <span>${data.user}</span>
+                        <span>${data.user || '匿名用户'}</span>
                         <span>${new Date(data.timestamp).toLocaleTimeString()}</span>
                     </div>
-                    <div class="message-content">${data.content}</div>
+                    <div class="message-content">${escapeHtml(data.content)}</div>
                 `;
                 return messageEl;
+            }
+            
+            // 防止XSS攻击的HTML转义
+            function escapeHtml(text) {
+                return text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
             
             // WebSocket事件处理
@@ -229,6 +278,8 @@
             
             socket.onopen = function(e) {
                 console.log('WebSocket连接已建立');
+                reconnectAttempts = 0; // 重置重连计数
+                
                 // 发送连接元数据
                 const meta = {
                     type: 'connect',
@@ -236,12 +287,17 @@
                     screen: `${window.screen.width}x${window.screen.height}`
                 };
                 socket.send(JSON.stringify(meta));
+                
+                // 显示连接成功消息
+                addSystemMessage('已连接到讨论区');
             };
             
             socket.onmessage = function(event) {
                 const startTime = performance.now();
                 
                 try {
+                    let message;
+                    
                     // 二进制协议处理
                     if (event.data instanceof ArrayBuffer) {
                         const dataView = new DataView(event.data);
@@ -255,47 +311,79 @@
                                 const jsonStr = decoder.decode(
                                     new Uint8Array(event.data, offset + 4, jsonLength)
                                 );
-                                const message = JSON.parse(jsonStr);
-                                message.timestamp = performance.now();
-                                messageBuffer.buffer.push(message);
+                                message = JSON.parse(jsonStr);
                                 break;
+                            case MESSAGE_TYPE.SYSTEM:
+                                // 处理系统消息
+                                const systemMsg = decoder.decode(new Uint8Array(event.data, 1));
+                                addSystemMessage(systemMsg);
+                                return;
                         }
                     } 
                     // JSON协议处理
                     else {
-                        const message = JSON.parse(event.data);
-                        message.timestamp = performance.now();
-                        messageBuffer.buffer.push(message);
+                        message = JSON.parse(event.data);
                     }
                     
-                    // 使用requestAnimationFrame进行批量更新
-                    if (performance.now() - messageBuffer.lastFlush > 5) {
-                        requestAnimationFrame(() => {
-                            messageBuffer.flush();
-                        });
+                    if (message) {
+                        message.timestamp = message.timestamp || performance.now();
+                        messageBuffer.buffer.push(message);
+                        
+                        // 使用requestAnimationFrame进行批量更新
+                        if (performance.now() - messageBuffer.lastFlush > 5) {
+                            requestAnimationFrame(() => {
+                                messageBuffer.flush();
+                            });
+                        }
                     }
                 } catch (e) {
                     console.error('消息处理错误:', e);
+                    addSystemMessage('消息处理出错，请重试');
                 }
                 
                 perf.lastUpdate = performance.now() - startTime;
             };
             
             socket.onclose = function(event) {
-                if (event.wasClean) {
-                    console.log(`连接关闭，代码=${event.code} 原因=${event.reason}`);
-                } else {
-                    console.log('连接中断');
-                    // 尝试重新连接
+                addSystemMessage('连接已断开，正在尝试重连...');
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const delay = Math.pow(2, reconnectAttempts) * 1000; // 指数退避重连
                     setTimeout(() => {
+                        console.log(`尝试第 ${reconnectAttempts} 次重连...`);
                         socket = new WebSocket(socketUrl);
-                    }, 1000);
+                        setupSocketEvents(); // 重新设置事件监听
+                    }, delay);
+                } else {
+                    addSystemMessage('重连失败，请刷新页面重试');
                 }
             };
             
             socket.onerror = function(error) {
                 console.log('WebSocket错误:', error);
+                addSystemMessage('连接出错');
             };
+            
+            // 重新设置Socket事件（用于重连时）
+            function setupSocketEvents() {
+                socket.onopen = socket.onopen;
+                socket.onmessage = socket.onmessage;
+                socket.onclose = socket.onclose;
+                socket.onerror = socket.onerror;
+                socket.binaryType = 'arraybuffer';
+            }
+            
+            // 添加系统消息
+            function addSystemMessage(content) {
+                const systemMessage = {
+                    user: '系统消息',
+                    content: content,
+                    timestamp: performance.now()
+                };
+                messageBuffer.buffer.push(systemMessage);
+                messageBuffer.flush();
+            }
             
             // 发送消息
             elements.sendBtn.addEventListener('click', sendMessage);
@@ -314,27 +402,53 @@
                     user: '匿名用户' // 实际应用中应该使用登录用户信息
                 };
                 
-                // 使用二进制协议发送
-                const encoder = new TextEncoder();
-                const jsonStr = JSON.stringify(message);
-                const jsonData = encoder.encode(jsonStr);
-                
-                const buffer = new ArrayBuffer(1 + 4 + jsonData.length);
-                const dataView = new DataView(buffer);
-                
-                dataView.setUint8(0, MESSAGE_TYPE.TEXT); // 消息类型
-                dataView.setUint32(1, jsonData.length); // 消息长度
-                
-                const uint8Array = new Uint8Array(buffer);
-                uint8Array.set(jsonData, 5); // 从第5字节开始放置JSON数据
-                
-                socket.send(buffer);
-                elements.input.value = '';
+                try {
+                    // 使用二进制协议发送
+                    const encoder = new TextEncoder();
+                    const jsonStr = JSON.stringify(message);
+                    const jsonData = encoder.encode(jsonStr);
+                    
+                    const buffer = new ArrayBuffer(1 + 4 + jsonData.length);
+                    const dataView = new DataView(buffer);
+                    
+                    dataView.setUint8(0, MESSAGE_TYPE.TEXT); // 消息类型
+                    dataView.setUint32(1, jsonData.length); // 消息长度
+                    
+                    const uint8Array = new Uint8Array(buffer);
+                    uint8Array.set(jsonData, 5); // 从第5字节开始放置JSON数据
+                    
+                    socket.send(buffer);
+                    elements.input.value = '';
+                } catch (e) {
+                    console.error('发送消息失败:', e);
+                    addSystemMessage('发送消息失败，请重试');
+                }
             }
             
-            // 关闭讨论区
-            elements.closeBtn.addEventListener('click', function() {
-                elements.discussion.style.display = 'none';
+            // 切换讨论区显示/隐藏
+            elements.showBtn.addEventListener('click', function() {
+                discussionState.visible = true;
+                elements.discussion.style.display = 'flex';
+                elements.showBtn.style.display = 'none';
+            });
+            
+            // 最小化/还原讨论区
+            elements.toggleBtn.addEventListener('click', function() {
+                discussionState.minimized = !discussionState.minimized;
+                const messagesContainer = elements.messages.parentElement.querySelector('.discussion-messages');
+                const inputContainer = elements.messages.parentElement.querySelector('.discussion-input');
+                
+                if (discussionState.minimized) {
+                    elements.toggleBtn.textContent = '+';
+                    messagesContainer.style.display = 'none';
+                    inputContainer.style.display = 'none';
+                    elements.discussion.style.height = 'auto';
+                } else {
+                    elements.toggleBtn.textContent = '−';
+                    messagesContainer.style.display = 'block';
+                    inputContainer.style.display = 'flex';
+                    elements.discussion.style.height = '';
+                }
             });
             
             // 性能监控报告
@@ -344,18 +458,26 @@
                 }
             }, 5000);
             
-            // 使用Web Worker进行后台消息处理
+            // 使用Web Worker进行后台消息处理（如果支持）
             if (window.Worker) {
-                const messageWorker = new Worker('message-worker.js');
-                messageWorker.onmessage = function(e) {
-                    const processedMessage = e.data;
-                    messageBuffer.buffer.push(processedMessage);
-                };
-                
-                socket.onmessage = function(event) {
-                    // 将原始数据传递给Worker处理
-                    messageWorker.postMessage(event.data, [event.data]);
-                };
+                try {
+                    const messageWorker = new Worker('message-worker.js');
+                    messageWorker.onmessage = function(e) {
+                        const processedMessage = e.data;
+                        if (processedMessage) {
+                            messageBuffer.buffer.push(processedMessage);
+                            messageBuffer.flush();
+                        }
+                    };
+                    
+                    messageWorker.onerror = function(error) {
+                        console.error('Worker错误:', error);
+                        // 回退到主线程处理
+                        messageWorker.terminate();
+                    };
+                } catch (e) {
+                    console.error('创建Worker失败:', e);
+                }
             }
         })();
     </script>
